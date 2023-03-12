@@ -48,15 +48,15 @@ while ~temp_list_ended
         stable = false;
         while ~stable
             k = k + 1;
-            temp_graph.time(k) = toc(Timer); %s
-            temp_graph.temp(k) = Temp_ctrl_device.get_temp();
-            temp_graph.heater(k) = Temp_ctrl_device.get_heater_value();
-            temp_graph.res(k) = LCR_device.get_res();
+            temp_graph.time(k) = toc(Timer); % s
+            temp_graph.temp(k) = Temp_ctrl_device.get_temp(); % K
+            temp_graph.heater(k) = Temp_ctrl_device.get_heater_value(); % [%]
+            temp_graph.res(k) = LCR_device.get_res(); % Ohm
             
             range = temp_graph.time >= (temp_graph.time(end) - 60);
             if numel(find(range)) > 10
-                last_min_span = diff(minmax(temp_graph.time(range)));
-                full_span = diff(minmax(temp_graph.time));
+                last_min_span = diff(minmax(temp_graph.res(range)));
+                full_span = diff(minmax(temp_graph.res));
                 stable_value = last_min_span/full_span;
             else
                 stable_value = 1;
@@ -69,16 +69,19 @@ while ~temp_list_ended
             cond_3 = time_passed/60 > 25;
             stable = (cond_1 && cond_2) || cond_3; %stable condition
             
-            plot_time = temp_graph.time - temp_graph.time(1);
+            plot_time = (temp_graph.time - temp_graph.time(1))/60; %m
             figure(Temp_fig)
             subplot(3, 1, 1)
                 plot(plot_time, temp_graph.temp, 'b')
+                xlabel('t, m')
                 title('Temp, K')
             subplot(3, 1, 2)
                 plot(plot_time, temp_graph.res, 'b')
+                xlabel('t, m')
                 title('PT1000, Ohm')
             subplot(3, 1, 3)
                 plot(plot_time, temp_graph.heater, 'b')
+                xlabel('t, m')
                 title('Heater, %')
         end
         
