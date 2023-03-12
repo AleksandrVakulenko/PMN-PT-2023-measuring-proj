@@ -1,8 +1,9 @@
 
 % TODO: CHECK GAIN VALUE
+% TODO: LCR class finish
 
 addpath(genpath('../Ammeter class/'));
-addpath(genpath('../Криостат 417/'));
+addpath(genpath('../Lakeshore325/'));
 addpath(genpath('../LCR Keysight matlab/'));
 addpath(genpath('.'));
 
@@ -66,7 +67,7 @@ while ~temp_list_ended
             cond_1 = abs(temp_graph.temp(k) - temp_actual) < 0.05;
             cond_2 = stable_value < 0.1;
             cond_3 = time_passed/60 > 25;
-            stable = (cond_1 && cond_2) || cond_3;
+            stable = (cond_1 && cond_2) || cond_3; %stable condition
             
             plot_time = temp_graph.time - temp_graph.time(1);
             figure(Temp_fig)
