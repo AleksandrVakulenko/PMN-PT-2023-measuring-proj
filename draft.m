@@ -9,8 +9,9 @@ addpath(genpath('.'));
 clc
 
 % settings
-amp_measureing = 280; %V
+amp_measureing = 80; %V 280 for experiment, 80 for oom temp test
 voltage_gain = 270; %FIXME: CHECK VALUE
+voltage_divider = 115.5;
 ramp_rate = 1; % K/min
 output_folder = create_folder('Output_2023_03_13');
 
@@ -103,6 +104,7 @@ while ~temp_list_ended
                 num2str(temp_number) '/' num2str(temp_list_size) ')']);
             Loop_opts = loop_options('amp', amp_measureing, ...
                                      'gain', voltage_gain, ...
+                                     'divider', voltage_divider, ...
                                      'period', period_actual, ...
                                      'delay', 0.1);
             Loops(i) = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
