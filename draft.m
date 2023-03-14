@@ -1,24 +1,25 @@
 
 % TODO: CHECK GAIN VALUE
-% TODO: LCR class finish
 
 addpath(genpath('../Ammeter class/'));
 addpath(genpath('../Lakeshore325/'));
 addpath(genpath('../LCR Keysight matlab/'));
 addpath(genpath('.'));
 
+clc
+
 % settings
 amp_measureing = 280; %V
-voltage_gain = 262; %FIXME: CHECK VALUE
+voltage_gain = 270; %FIXME: CHECK VALUE
 ramp_rate = 1; % K/min
 output_folder = create_folder('Output_2023_03_13');
 
 % experiment obj
-exp_obj = Experiment(295, 80, 5, 'freq_mid'); % start stop step freq_list
+exp_obj = Experiment(295, 80, 5, 'freq_fast'); % start stop step freq_list
 
 % devices handles create
 LCR_device = KeysightLCR();
-FEloop_device = Ammeter('COM0', 'nyan', 'bias');
+FEloop_device = Ammeter('COM3', 'nyan', 'bias');
 Temp_ctrl_device = Lakeshore325('COM0');
 
 % init controller and wait for user
@@ -39,9 +40,12 @@ temp_list_ended = 0;
 while ~temp_list_ended
     [actual_temp, temp_list_ended] = exp_obj.get_temp();
     if ~temp_list_ended
+        temp_actual = exp_obj.get_temp();
+        [temp_number, temp_list_size] = exp_obj.get_temp_number;
+        disp(['Temp: ' num2str(temp_actual) ' K (' ...
+            num2str(temp_number) '/' num2str(temp_list_size) ')'])
         
         % set_temp()
-        temp_actual = exp_obj.get_temp();
         Temp_ctrl_device.set_setpoint(temp_actual);
         temp_graph = [];
         k = 0;
@@ -63,9 +67,10 @@ while ~temp_list_ended
             end
             
             time_passed = temp_graph.time(end) - temp_graph.temp(1); %s
-
+            
+            %FIXME: magic constants (3 lines)
             cond_1 = abs(temp_graph.temp(k) - temp_actual) < 0.05;
-            cond_2 = stable_value < 0.1;
+            cond_2 = stable_value < 0.05;
             cond_3 = time_passed/60 > 25;
             stable = (cond_1 && cond_2) || cond_3; %stable condition
             
@@ -85,16 +90,27 @@ while ~temp_list_ended
                 title('Heater, %')
         end
         
-        % get_loop
-        Loop_opts = loop_options('amp', amp_measureing, ...
-                                 'gain', voltage_gain, ...
-                                 'period', period_actual);
-        feloop = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
-
+        % get_loops
+        freq_list = exp_obj.get_freq_list();
+        freq_list_size = numel(freq_list);
+        clearvars Loops
+        for i = 1:freq_list_size
+            freq = freq_list(i);
+            period_actual = 1/freq;
+            disp(['    Period: ' num2str(period_actual) ' s (' ...
+                num2str(i) '/' num2str(freq_list_size) ')' ...
+                ' Temp: ' num2str(temp_actual) ' K (' ...
+                num2str(temp_number) '/' num2str(temp_list_size) ')']);
+            Loop_opts = loop_options('amp', amp_measureing, ...
+                                     'gain', voltage_gain, ...
+                                     'period', period_actual, ...
+                                     'delay', 0.1);
+            Loops(i) = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
+        end
         % save_results;
-        file_name = [num2str(exp_obj.get_temp_number, '%03u') '.mat'];
+        file_name = [num2str(temp_number, '%03u') '.mat'];
         file_addr = [output_folder '/' file_name];
-        save(file_name, 'feloop', 'temp_actual', 'temp_graph')
+        save(file_addr, 'Loops', 'temp_actual', 'temp_graph', 'freq_list')
     end
 end
 % ------------ main part end ------------

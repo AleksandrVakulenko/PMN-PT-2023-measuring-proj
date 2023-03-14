@@ -24,8 +24,9 @@ methods(Access = public)
         init_temp = obj.temp_list(1);
     end
 
-    function number = get_temp_number(obj);
+    function [number, list_size] = get_temp_number(obj)
         number = obj.actual_temp_n;
+        list_size = numel(obj.temp_list);
     end
 
     function [freq_list] = get_freq_list(obj)
@@ -97,7 +98,7 @@ range = freq_list > 10;
 freq_list(range) = 10;
 range = freq_list < 1/60;
 freq_list(range) = 1/60;
-freq_list = unique(freq_list);
+freq_list = unique(freq_list, 'stable');
 
 % number of points
 temp_N = numel(temp_list);
