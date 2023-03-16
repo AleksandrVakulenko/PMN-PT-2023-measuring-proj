@@ -25,7 +25,7 @@ methods(Access = public)
     end
 
     function [number, list_size] = get_temp_number(obj)
-        number = obj.actual_temp_n;
+        number = obj.actual_temp_n - 1; % NOTE: post-inc in get_temp
         list_size = numel(obj.temp_list);
     end
 
@@ -61,7 +61,10 @@ switch freq_variant
 
     case "freq_mid"
         freq_list = 1./[0.1 0.2 0.5 1 2 5 10 20 60];
-
+    
+    case "freq_mid_fast"
+        freq_list = 1./[0.1 0.2 0.5 1 2 5 10 30];
+        
     case "freq_fast"
         freq_list = 1./[0.1 0.2 0.5 0.75 1 1.5 2 3 5 7.5 10];
 
