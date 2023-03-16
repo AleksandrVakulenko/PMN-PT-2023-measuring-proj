@@ -1,5 +1,4 @@
 
-% TODO: CHECK GAIN VALUE
 
 addpath(genpath('../Ammeter class/'));
 addpath(genpath('../Lakeshore325/'));
@@ -8,25 +7,26 @@ addpath(genpath('.'));
 
 clc
 
+%TODO: add test variant
+
 % settings
-amp_measureing = 80; %V 280 for experiment, 80 for oom temp test
-voltage_gain = 270; %FIXME: CHECK VALUE
+amp_measureing = 220;
+voltage_gain = 270;
 voltage_divider = 115.5;
 ramp_rate = 1; % K/min
-output_folder = create_folder('Output_2023_03_13');
+output_folder = create_folder('Output_2023_03_14');
 
 % experiment obj
-exp_obj = Experiment(295, 80, 5, 'freq_fast'); % start stop step freq_list
+exp_obj = Experiment(295, 80, 5, 'freq_mid_fast'); % start stop step freq_list
 
 % devices handles create
 LCR_device = KeysightLCR();
 FEloop_device = Ammeter('COM3', 'nyan', 'bias');
-Temp_ctrl_device = Lakeshore325('COM0');
+Temp_ctrl_device = Lakeshore325('COM2');
 
 % init controller and wait for user
 Temp_controller_init(Temp_ctrl_device, exp_obj, ramp_rate);
-temp_actual = exp_obj.get_init_temp();
-wait_user_input(); % wait user input
+wait_user_input(); % TODO: print exp params
 
 % create figure for temp graph and loop drawing
 Feloop_fig = figure;
@@ -39,9 +39,8 @@ try
 % -------------- main part --------------
 temp_list_ended = 0;
 while ~temp_list_ended
-    [actual_temp, temp_list_ended] = exp_obj.get_temp();
+    [temp_actual, temp_list_ended] = exp_obj.get_temp();
     if ~temp_list_ended
-        temp_actual = exp_obj.get_temp();
         [temp_number, temp_list_size] = exp_obj.get_temp_number;
         disp(['Temp: ' num2str(temp_actual) ' K (' ...
             num2str(temp_number) '/' num2str(temp_list_size) ')'])
@@ -54,7 +53,8 @@ while ~temp_list_ended
         while ~stable
             k = k + 1;
             temp_graph.time(k) = toc(Timer); % s
-            temp_graph.temp(k) = Temp_ctrl_device.get_temp(); % K
+            Temp_ab = Temp_ctrl_device.get_temp(); % K
+            temp_graph.temp(k) = Temp_ab.a;
             temp_graph.heater(k) = Temp_ctrl_device.get_heater_value(); % [%]
             temp_graph.res(k) = LCR_device.get_res(); % Ohm
             
@@ -67,12 +67,14 @@ while ~temp_list_ended
                 stable_value = 1;
             end
             
-            time_passed = temp_graph.time(end) - temp_graph.temp(1); %s
+            time_passed = temp_graph.time(end) - temp_graph.time(1); %s
             
+            %TODO: update stable conditions
             %FIXME: magic constants (3 lines)
-            cond_1 = abs(temp_graph.temp(k) - temp_actual) < 0.05;
-            cond_2 = stable_value < 0.05;
-            cond_3 = time_passed/60 > 25;
+            cond_1 = abs(temp_graph.temp(k) - temp_actual) < 0.2;
+%             cond_2 = stable_value < 0.05;
+            cond_2 = true;
+            cond_3 = time_passed/60 > 12;
             stable = (cond_1 && cond_2) || cond_3; %stable condition
             
             plot_time = (temp_graph.time - temp_graph.time(1))/60; %m
