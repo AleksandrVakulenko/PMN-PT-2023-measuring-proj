@@ -25,6 +25,8 @@ FEloop_device = Ammeter('COM3', 'nyan', 'bias');
 Temp_ctrl_device = Lakeshore325('COM2');
 
 % init controller and wait for user
+LCR_device.set_volt(0.1); % V
+LCR_device.set_freq(1000); % kHz
 Temp_controller_init(Temp_ctrl_device, exp_obj, ramp_rate);
 wait_user_input(); % TODO: print exp params
 
