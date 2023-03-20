@@ -7,14 +7,14 @@ addpath(genpath('.'));
 
 clc
 
-%TODO: add test variant
+%TODO: add short test variant of file
 
 % settings
-amp_measureing = 220;
+% amp_measureing = 220; %UNUSED
 voltage_gain = 270;
 voltage_divider = 115.5;
 ramp_rate = 1; % K/min
-output_folder = create_folder('Output_2023_03_14');
+output_folder = create_folder('Output_2023_03_20');
 
 % experiment obj
 exp_obj = Experiment(295, 80, 5, 'freq_mid_fast'); % start stop step freq_list
@@ -41,14 +41,12 @@ try
 % -------------- main part --------------
 temp_list_ended = 0;
 while ~temp_list_ended
-    [temp_actual, temp_list_ended] = exp_obj.get_temp();
+    [temp_set_point, temp_list_ended] = exp_obj.get_temp();
     if ~temp_list_ended
         [temp_number, temp_list_size] = exp_obj.get_temp_number;
-        disp(['Temp: ' num2str(temp_actual) ' K (' ...
-            num2str(temp_number) '/' num2str(temp_list_size) ')'])
         
         % set_temp()
-        Temp_ctrl_device.set_setpoint(temp_actual);
+        Temp_ctrl_device.set_setpoint(temp_set_point);
         temp_graph = [];
         k = 0;
         stable = false;
@@ -71,14 +69,18 @@ while ~temp_list_ended
             
             time_passed = temp_graph.time(end) - temp_graph.time(1); %s
             
-            %TODO: update stable conditions
             %FIXME: magic constants (3 lines)
-            cond_1 = abs(temp_graph.temp(k) - temp_actual) < 0.2;
-%             cond_2 = stable_value < 0.05;
-            cond_2 = true;
+            cond_1 = abs(temp_graph.temp(k) - temp_set_point) < 0.2;
+            cond_2 = stable_value < 0.05;
+            %             cond_2 = true;
             cond_3 = time_passed/60 > 12;
             stable = (cond_1 && cond_2) || cond_3; %stable condition
-            
+
+            disp(['Temp_sp: ' num2str(temp_set_point, '%0.2f') ' K ' ...
+                'Temp: ' num2str(temp_graph.temp(k), '%0.2f') ' K ' ...
+                'sv: ' num2str(stable_value, '%0.4f') ' ('...
+                num2str(temp_number) '/' num2str(temp_list_size) ')'])
+
             plot_time = (temp_graph.time - temp_graph.time(1))/60; %m
             figure(Temp_fig)
             subplot(3, 1, 1)
@@ -100,7 +102,7 @@ while ~temp_list_ended
         freq_list = loop_spec_list.freq_list;
         amp_list = loop_spec_list.amp_list;
         init_pulse_list = loop_spec_list.init_pulse_list;
-        freq_list_size = numel(freq_list);
+        freq_list_size = numel(freq_list); %FIXME: get number of loops in list
         clearvars Loops
         for i = 1:freq_list_size
             freq = freq_list(i);
@@ -108,7 +110,7 @@ while ~temp_list_ended
             disp(['    Period: ' num2str(1/freq) ' s |' ...
                 ' Amp: ' num2str(amp) ' V (' ...
                 num2str(i) '/' num2str(freq_list_size) ') |' ...
-                ' Temp: ' num2str(temp_actual) ' K (' ...
+                ' Temp: ' num2str(temp_set_point) ' K (' ...
                 num2str(temp_number) '/' num2str(temp_list_size) ')']);
             Loop_opts = loop_options('amp', amp, ...
                                      'gain', voltage_gain, ...
@@ -124,10 +126,11 @@ while ~temp_list_ended
             Loops(i).version = "V01.01.00";
             %TODO: add loop spec to loop struct
         end
+
         % save_results;
         file_name = [num2str(temp_number, '%03u') '.mat'];
         file_addr = [output_folder '/' file_name];
-        save(file_addr, 'Loops', 'temp_actual', 'temp_graph', 'freq_list')
+        save(file_addr, 'Loops', 'temp_set_point', 'temp_graph', 'freq_list')
     end
 end
 % ------------ main part end ------------

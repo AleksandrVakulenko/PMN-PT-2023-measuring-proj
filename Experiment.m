@@ -83,29 +83,36 @@ amp_list = [
     450
     400
     350
+    300
 
     450
     400
     350
+    300
 
     450
     400
     350
+    300
 
     450
     400
     350
+    300
 
     450
     400
-    350];
+    350
+    300];
 
 
 periods_list = [
     60
     60
     60
+    60
 
+    10
     10
     10
     10
@@ -113,11 +120,14 @@ periods_list = [
     3
     3
     3
+    3
 
     1
     1
     1
+    1
 
+    0.5
     0.5
     0.5
     0.5];
@@ -128,20 +138,25 @@ init_pulse_list = [
     1
     0
     0
-
-    1
-    0
     0
 
     1
     0
     0
+    0
 
     1
     0
     0
+    0
 
     1
+    0
+    0
+    0
+
+    1
+    0
     0
     0];
 
@@ -167,18 +182,22 @@ temp_fall = [temp_start:-temp_step:temp_low];
 temp_rise = [temp_low+temp_step:temp_step:temp_final];
 temp_list = [temp_fall temp_rise];
 
-[temp_list, freq_list] = tf_list_check(temp_list, freq_list);
-
 loop_spec_list.freq_list = freq_list;
 loop_spec_list.amp_list = amp_list;
 loop_spec_list.init_pulse_list = init_pulse_list;
+
+[temp_list, loop_spec_list] = tf_list_check(temp_list, loop_spec_list);
+
+
 end
 
 
 
-function [temp_list_out, freq_list_out] = tf_list_check(temp_list, freq_list)
-freq_list
-% temp limits check
+function [temp_list_out, loop_spec_list] = tf_list_check(temp_list, loop_spec_list)
+freq_list = loop_spec_list.freq_list;
+init_pulse_list = loop_spec_list.init_pulse_list;
+
+% freq_list and temp limits check
 range = temp_list > 300;
 temp_list(range) = 300;
 range = temp_list < 10;
@@ -197,7 +216,8 @@ temp_N = numel(temp_list);
 freq_N = numel(freq_list);
 
 % time calc
-single_time = sum(1./freq_list*5)/60; %m %FIXME: 5 is magic constant
+number_of_loops = init_pulse_list + 4; %FIXME: ugly code, replace
+single_time = sum(1./freq_list.*number_of_loops)/60; %m %FIXME: 5 is magic constant
 full_time = numel(temp_list) * single_time/60; %h
 
 % NOTE: magic constants
@@ -214,7 +234,7 @@ disp(['Single time: ' num2str(single_time, '%0.2f') ' min']);
 disp(['Full time: ' num2str(full_time, '%0.2f') ' hour']);
 
 temp_list_out = temp_list;
-freq_list_out = freq_list;
+loop_spec_list.freq_list = freq_list;
 
 end
 
