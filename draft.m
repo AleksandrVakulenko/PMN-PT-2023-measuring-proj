@@ -17,7 +17,7 @@ ramp_rate = 1; % K/min
 output_folder = create_folder('Output_2023_03_20');
 
 % experiment obj
-exp_obj = Experiment(295, 80, 5, 'freq_mid_fast'); % start stop step freq_list
+exp_obj = Experiment(295, 70, 5, 'freq_mid_fast'); % start stop step freq_list
 
 % devices handles create
 LCR_device = KeysightLCR();
@@ -32,6 +32,7 @@ wait_user_input(); % TODO: print exp params
 
 % create figure for temp graph and loop drawing
 Feloop_fig = figure;
+hold on
 Temp_fig = figure;
 
 % start measuring
@@ -71,9 +72,9 @@ while ~temp_list_ended
             
             %FIXME: magic constants (3 lines)
             cond_1 = abs(temp_graph.temp(k) - temp_set_point) < 0.2;
-            cond_2 = stable_value < 0.05;
+            cond_2 = stable_value < 0.1;
             %             cond_2 = true;
-            cond_3 = time_passed/60 > 12;
+            cond_3 = time_passed/60 > 10;
             stable = (cond_1 && cond_2) || cond_3; %stable condition
 
             disp(['Temp_sp: ' num2str(temp_set_point, '%0.2f') ' K ' ...
@@ -98,7 +99,7 @@ while ~temp_list_ended
         end
         
         % get_loops
-        loop_spec_list = exp_obj.get_freq_list();
+        loop_spec_list = exp_obj.get_loop_spec_list();
         freq_list = loop_spec_list.freq_list;
         amp_list = loop_spec_list.amp_list;
         init_pulse_list = loop_spec_list.init_pulse_list;
@@ -119,7 +120,9 @@ while ~temp_list_ended
                                      'delay', 0.3, ...
                                      'init_pulse', init_pulse_list(i), ...
                                      'voltage_ch', 1);
-            Loops(i) = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
+            figure(Feloop_fig)
+            cla
+            Loops(i).feloop = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
             Loops(i).period = 1/freq;
             Loops(i).amp = amp;
             Loops(i).init_pulse = init_pulse_list(i);
