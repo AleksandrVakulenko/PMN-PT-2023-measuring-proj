@@ -37,16 +37,19 @@ temp_graph = [];
 Temp_ab = Temp_ctrl_device.get_temp(); % K
 temp_A = Temp_ab.a;
 Timer = tic;
-while temp_A < 280
+while temp_A < 295
     i = i + 1;
     Temp_ab = Temp_ctrl_device.get_temp(); % K
     temp_A = Temp_ab.a;
-    disp(['|' num2str(i) '| Temp: ' num2str(temp_A) ' K']);
+%     disp(['|' num2str(i) '| Temp: ' num2str(temp_A) ' K']);
     
     temp_graph.time(i) = toc(Timer); % s
     temp_graph.temp(i) = temp_A;
     temp_graph.res(i) = LCR_device.get_res(); % Ohm
 
+    disp(['|' num2str(i) '| Temp: ' num2str(temp_A) ' K ' ...
+        'R = ' num2str(temp_graph.res(i)) ' Ohm']);
+    
     freq = 1/20;
     amp = 450;
     
@@ -60,7 +63,7 @@ while temp_A < 280
 
     figure(Feloop_fig)
     cla
-    Loops(i) = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
+    Loops(i).feloop = hysteresis_PE_DWM(FEloop_device, Loop_opts, Feloop_fig);
     Loops(i).period = 1/freq;
     Loops(i).amp = amp;
     Loops(i).init_pulse = 0;
@@ -69,7 +72,7 @@ while temp_A < 280
 
 
     % save_results;
-    file_name = [num2str(temp_number, '%03u') '.mat'];
+    file_name = [num2str(i, '%04u') '.mat'];
     file_addr = [output_folder '/' file_name];
     save(file_addr, 'Loops', 'temp_graph')
 
