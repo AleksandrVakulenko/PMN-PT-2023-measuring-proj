@@ -1,3 +1,8 @@
+
+output_folder = create_folder('Output_2023_07_18_test_pmnpt');
+i = 0;
+
+%%
 addpath(genpath('../Ammeter class/'));
 addpath(genpath('.'));
 
@@ -8,21 +13,20 @@ clc
 % voltage_divider = 115.5;
 voltage_gain = 1000;
 voltage_divider = 1000;
-% output_folder = create_folder('Output_2023_05_15_PZT');
 
 
-FEloop_device = Ammeter('COM3', 'nyan', 'bias');
-
+FEloop_device = Ammeter('COM4', 'nyan', 'bias');
 % i = 1;
 i = i + 1;
 
-freq = 1/15;
-amp = 630;
+freq = 1/5;
+amp = 600;
 
 Loop_opts = loop_options('amp', amp, ...
     'gain', voltage_gain, ...
     'divider', voltage_divider, ...
     'period', 1/freq, ...
+    'post', 2, ...
     'delay', 0.3, ...
     'init_pulse', 0, ...
     'voltage_ch', 1);
