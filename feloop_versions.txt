@@ -5,6 +5,52 @@ V01.00.00 experimet on 14.03.2023
 
 V01.01.00 experiment on 20.03.2023
 
+V_1.9.6 summer experiments 
+
+
+
+__Future releases:
+V_2.0.0 : using refnext, sample struct, sample info
+
+
+
+
+
+
+
+-------------------------------------------------------------
+Loop struct // Date: 3 ‎апреля ‎2023
+
+%       VERSION
+%
+
+%       ENVIRONMENT
+% time of measurement start
+% temperature
+% measuring device
+% amplifier
+%
+
+%       SAMPLE
+% thickness
+% surface area
+% material
+% ID
+% 
+
+%       LOOP PROPs
+% measuriong device
+% waveform ??(legacy)
+% pulse sequence
+% period
+% amplitude
+% dain
+% divider
+% amplifier BW
+% 
+
+
+%
 
 
 

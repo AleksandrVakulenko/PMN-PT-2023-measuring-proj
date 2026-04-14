@@ -11,22 +11,22 @@ clc
 % settings
 % voltage_gain = 270;
 % voltage_divider = 115.5;
-voltage_gain = 1000;
-voltage_divider = 1000;
+voltage_gain = 20;
+voltage_divider = 100;
 
 
-FEloop_device = Ammeter('COM4', 'nyan', 'bias');
+FEloop_device = Ammeter('COM6', 'nyan', 'bias');
 % i = 1;
 i = i + 1;
 
-freq = 1/5;
-amp = 600;
+freq = 1;
+amp = 100;
 
 Loop_opts = loop_options('amp', amp, ...
     'gain', voltage_gain, ...
     'divider', voltage_divider, ...
     'period', 1/freq, ...
-    'post', 2, ...
+    'post', 0.05, ...
     'delay', 0.3, ...
     'init_pulse', 0, ...
     'voltage_ch', 1);
@@ -39,10 +39,10 @@ Loops.amp = amp;
 Loops.init_pulse = 0;
 Loops.version = "V01.01.00";
 
-
-file_name = [num2str(i, '%04u') '.mat'];
-file_addr = [output_folder '/' file_name];
-save(file_addr, 'Loops')
+% 
+% file_name = [num2str(i, '%04u') '.mat'];
+% file_addr = [output_folder '/' file_name];
+% save(file_addr, 'Loops')
 
 
 
